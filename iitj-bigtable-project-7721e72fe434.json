@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "iitj-bigtable-project",
+  "private_key_id": "7721e72fe43444f8c953404c3673c5befd1cccf0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDNjRaeGlj+vknh\ne/bZBwlflfAIlbUBfSja6aU5EYAHnH5mRpRRyePtqZ4rXIcC0tQOD3FCcRQCzqN4\n2y17AJ715ZM6LGul8sL/EO5pXDSfUlf+GJJmH3ulc/pxy9Jg5KpctkgfQbCML+OS\ncZ543CN8pMsVIS8TJoMfXSW9rx94HKGLEuW+JhZdpFq7cA5x/8Cwi7KnzGjQJ8zc\nt8Shm7j/Xm87z4Di9dwCquLbJXnoixd7U9nr/ZO5i4gWevxRpz8GE4EiJ20Ebqyy\nsQm6+c9syubfr4k2w02WiRNykqXYIVnr91K0cziVka051JZRwkXvaRGJFiu73poU\n6/SU5jFVAgMBAAECggEABQEP0WaLzxvb2Zj2f/8bW8/fKZ5Xa0NcSMQSaSrDZqwJ\nKb1DJCCZo3ITLzQP92IhlnwKwlbVaWIVeb5AQ7PWqt7dcDefoUkhNSt42mjLwSs0\niDOZ8NGIZZVGvhl7tC8s9JfddqFXRnpt/GU2ufOGC6VJamjF6B3yaEOQxSbrybVB\ngN9uTQ2CvpnXNnhW1QWNsZcgF7kA9KTqzIE4b/9DdaeQWP2HYtLVZbLB5+gvA7JG\nVulLmUgBwRDo4ThQNd60JYZV5vI2b1mKdLmr3usuYIwIh0jEMQRGO+85MjFvMuo1\nl5CDQlZtHNye0wGh4xjpOMEHf9C3Ef0EbQGNf3f0QQKBgQD+aLUfpX9E4KbTs6Uh\n2lMCFDaF3ViKD3gonQE5XqFsxqmrK/ux1slzPjxdAccX7RIhnueole0wHWCoYW0D\nT701q3FHBOlsXGu2lKwmVvXLsxP5mpYiq8lPT6/nGAZyPr0KlQ8zrKo9dx0xe+QQ\neyqRiwchskbb3mmZf1vvk+fpdQKBgQDO1imZaco694+6fEWe9NXJGN82w2CWXYww\n5Z3YAK3ZgxJPAQFlkxPnrd0Om4AXEiFEnNy/Z0urj4u3AxVIzXXd/tvCsXsSxvuI\nFdDOb/YCAQytCdhr8+rKVla0lxjau7494vbAJcJ9mZBfPdN/izaADvtytki2M0jP\nzaTMHthMYQKBgQD7BSVxjEH/HAp/aAnPVTQCIR+LBdOOpaTRrdi/Wne8dGiE1GkM\nF/m9E/NLca2YFfqF4dyBoyzdBJ+ShE6jrdHrWrXydQ48NRSymg8h5TuxOYjEB5uL\nqiR/dQkC49m4b97myhytx/hRnW3YnX1yJZTi9mKbBOSVnOZk5h04Tp/M4QKBgQCp\nDXfwsPueWIr78+h/dENr2s1OGEBQheM4b+QkEOIHHs8PDZZTq/Of74X3E3eM47+X\nMdJnColZjri1+2ohF/UXXd/GcINUJJifcJ06rV3X4321zI88JJ+pgwnZDoo89SgX\nsvLUt8gQGjxa69B6tZD098nix0QEz0PavIzOXQOS4QKBgQDFSR4mxXyXRt3nlsAg\nZvHkiWLxp3ivdw/e02zSeY20ixYviWw88ZsWKsxSsnJ06V9RNZR6DZGZKeURPeQ0\nRZuMgGuYlf9vYxYpaJQXSw6iKQyYjBB0Ji8iF1wSQkwp+6M/VFVMBj1+bfkg3226\n95GgyTeG8Xv1tTLe+Tv4ebDopg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "bigtable-access@iitj-bigtable-project.iam.gserviceaccount.com",
+  "client_id": "100552260842374605556",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bigtable-access%40iitj-bigtable-project.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
