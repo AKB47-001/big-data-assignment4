@@ -20,55 +20,56 @@ import java.util.ArrayList;
 
 
 // Using Google Cloud Bigtable to store and query weather data
-public class Bigtable {    
-    public final String projectId = "iitj-bigtable-project";    
-    public final String instanceId = "iitj-bigtable-instance";
+public class Bigtable {  
+
+    // Initializing important variables 
     public final String COLUMN_FAMILY = "sensor";
-    public final String tableId = "weather";
+    public final String tableId = "weather"; 
+    public final String projectId = "iitj-bigtable-project";    
+    public final String instanceId = "iitj-bigtable-instance";    
     public BigtableDataClient btDataClient;
-    public BigtableTableAdminClient btAdminClient;       
+    public BigtableTableAdminClient btAdminClient;   
     
-    // Function to connect to Bigtable
-    public void bigTableConnect() throws IOException {
-        System.out.println("**** Connecting to the BigTable ****");
-        BigtableDataSettings dSettings =
-            BigtableDataSettings.newBuilder().setProjectId(projectId).setInstanceId(instanceId).build();
-        BigtableTableAdminSettings btadminSettings =
-            BigtableTableAdminSettings.newBuilder().setProjectId(projectId).setInstanceId(instanceId).build();
-        this.btDataClient = BigtableDataClient.create(dSettings);
-        this.btAdminClient = BigtableTableAdminClient.create(btadminSettings);
-        System.out.println("****Connection successful****");
+    // Main Function - Starting point of the App
+    public static void main(String[] args) throws Exception {
+        Bigtable testbt = new Bigtable();
+        testbt.run();
     }
 
-    // Function to run all operations
+    //  Function to run/call all other operations such as connect, delete, load and run queries 
     public void run() throws Exception {
-        bigTableConnect();
+        connect();
         deleteTable();
         createTable();
-        load();
-        // NOTE: The first time you run this, it will create and load the table.
-        // After that, you can comment out deleteTable(), createTable(), and loadData()
-        // to run only the queries.
+        load();        
         int temperature = query1();
-        System.out.println("Query1_Result: Temperature At Vancouver On 2022-10-01 10:00: " + temperature + " degree farenheit ");
+        System.out.println("--------------------------------------------------------------");
+        System.out.println("Query1_Result: TEMPRETURE AT VENCOVER ON 2022-10-01 10:00: " + temperature + " degree farenheit ");
+        System.out.println("--------------------------------------------------------------\n");
         int wind_speed = query2();
-        System.out.println("Query2_Result: Highest Wind Speed In Portland In Sept 2022: " + wind_speed + " miles/h");
+        System.out.println("--------------------------------------------------------------");
+        System.out.println("\nQuery2_Result: HIGHEST WIND SPEED IN PORTLAND IN SEPTEMBER 2022: " + wind_speed + " miles/h");
+        System.out.println("--------------------------------------------------------------\n");
         ArrayList<Object[]> data = query3();
-        System.out.println("Query3_Result: All Readings For SeaTac On October 2, 2022:");
+        System.out.println("--------------------------------------------------------------");
+        System.out.println("\nQuery3_Result: ALL READINGS FOR SEATAC ON OCTOBER 2, 2022:");
+        System.out.println("--------------------------------------------------------------\n");
         StringBuffer buf = new StringBuffer();
-        buf.append("DATE       HOUR TEMP DEW HUMIDITY WINDSPEED PRESSURE\n");
+        buf.append("DATE            HOUR TEMP DEW   HUMIDITY WINDSPEED PRESSURE\n");
         for (Object[] vals : data) {
             buf.append(String.format("%s %s   %s   %s  %s        %s         %s\n", vals));
         }
         System.out.println(buf.toString());
         temperature = query4();
-        System.out.println("Query4_Result: Highest Temperature In Summer 2022: " + temperature + " degree farenheit ");
+        System.out.println("--------------------------------------------------------------");
+        System.out.println("\nQuery4_Result: Highest Temperature In Summer 2022: " + temperature + " degree farenheit ");
+        System.out.println("--------------------------------------------------------------");
         close();
     }
 
     // Function to close the clients
     public void close() {
-        System.out.println("****Closing clients****");
+        System.out.println("\nCLOSING CLIENT CONNECTION");
         if (btDataClient != null) {
             btDataClient.close();
         }
@@ -76,74 +77,79 @@ public class Bigtable {
             btAdminClient.close();
         }
     }
+        
+    // Function to connect to Bigtable
+    public void connect() throws IOException {
+        System.out.println("\n****ATTEMPTING TO CONNECT TO BIGTABLE INSTANCE****\n");
+        BigtableDataSettings dSettings =
+            BigtableDataSettings.newBuilder().setProjectId(projectId).setInstanceId(instanceId).build();
+        BigtableTableAdminSettings btadminSettings =
+            BigtableTableAdminSettings.newBuilder().setProjectId(projectId).setInstanceId(instanceId).build();
+        this.btDataClient = BigtableDataClient.create(dSettings);
+        this.btAdminClient = BigtableTableAdminClient.create(btadminSettings);
+        System.out.println("\nCONNECTION HAS BEEN SUCCESSFULL TO INSTANCE: iitj-bigtable-instance");
+        System.out.println("Warning: DO NOT FORGET TO DELETE THE INSTANCE POST USAGE\n");
+    }    
 
     // Function to create the table
     public void createTable() {
-        System.out.println("Creating the table..... " + tableId);
+        System.out.println("\nCREATING THE TABLE >> " + tableId);
         if (!btAdminClient.exists(tableId)) {
             CreateTableRequest createTableRequest = CreateTableRequest.of(tableId).addFamily(COLUMN_FAMILY);
             btAdminClient.createTable(createTableRequest);
-            System.out.printf("Table %s created successfully%n", tableId);
+            System.out.printf("TABLE %s HAS BEEN CREATED SUCCESSFULLY!!\n", tableId);
         } else {
-            System.out.printf("Table %s already exists.%n", tableId);
+            System.out.printf("TABLE %s ALREADY EXISTS.%n", tableId);
         }
     }
 
     // Function to load data into the table
-    public void load() throws Exception {
-        String dataPath = "data/";
-        BulkMutation batch = BulkMutation.create(tableId);
-        long mutationCountInCurrentBatch = 0;
-        long totalMutationsSent = 0;
-        final long BATCH_LIMIT = 85000; 
-
+    public void load() throws Exception {        
+        // Initialising variables
+        final long TEST_BATCH_VAR = 80000; 
+        long totalMutations = 0;
+        String dataSetPath = "data/";         
+        BulkMutation bulkMutation = BulkMutation.create(tableId);
+        long currentBatchMutationCount = 0;
         String[] files = {"seatac.csv", "vancouver.csv", "portland.csv"};
         String[] stationIds = {"SEA", "YVR", "PDX"};
 
+        // Starting to load the datasets in the data folder for CSV datasets
         try {
             for (int i = 0; i < files.length; i++) {
                 String fileName = files[i];
                 String stationId = stationIds[i];
-                System.out.println("Loading Data For " + stationId + " from " + fileName);
-
-                File file = new File(dataPath + fileName);
+                System.out.println("\nLOADING DATA FOR DATASET " + stationId + " FROM " + fileName);
+                File file = new File(dataSetPath + fileName);
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     String line;
                     String lastHour = "";
                     reader.readLine(); 
-
                     while ((line = reader.readLine()) != null) {
                         String[] values = line.split(",");
-
                         if (values.length > 8) { 
                             String date = values[1];
                             String time = values[2];
                             String dateTime = date + " " + time;
-
                             if (dateTime.length() >= 13) {
                                 String currentHour = dateTime.substring(0, 13);
-
                                 if (!currentHour.equals(lastHour)) {
                                     lastHour = currentHour;
                                     String rowKey = stationId + "#" + currentHour.replace(" ", "-");
-
                                     RowMutationEntry mutationEntry = RowMutationEntry.create(rowKey)
                                         .setCell(COLUMN_FAMILY, "temperature", values[3])
                                         .setCell(COLUMN_FAMILY, "dewpoint", values[4])
                                         .setCell(COLUMN_FAMILY, "humidity", values[5])
                                         .setCell(COLUMN_FAMILY, "windspeed", values[6])
-                                        .setCell(COLUMN_FAMILY, "pressure", values[8]);
-                                    
-                                    batch.add(mutationEntry);
-                                    mutationCountInCurrentBatch += 5;
-
-                                    if (mutationCountInCurrentBatch >= BATCH_LIMIT) {
-                                        System.out.println("Sending batch of " + mutationCountInCurrentBatch + " mutations.");
-                                        btDataClient.bulkMutateRows(batch);
-                                        totalMutationsSent += mutationCountInCurrentBatch;
-                                        
-                                        batch = BulkMutation.create(tableId);
-                                        mutationCountInCurrentBatch = 0;
+                                        .setCell(COLUMN_FAMILY, "pressure", values[8]);                                    
+                                    bulkMutation.add(mutationEntry);
+                                    currentBatchMutationCount += 5;
+                                    if (currentBatchMutationCount >= TEST_BATCH_VAR) {
+                                        System.out.println("SENDING BATCH OF " + currentBatchMutationCount + " MUTATIONS");
+                                        btDataClient.bulkMutateRows(bulkMutation);
+                                        totalMutations += currentBatchMutationCount;                                        
+                                        bulkMutation = BulkMutation.create(tableId);
+                                        currentBatchMutationCount = 0;
                                     }
                                 }
                             }
@@ -151,25 +157,25 @@ public class Bigtable {
                     }
                 }
             }            
-            if (mutationCountInCurrentBatch > 0) {
-                System.out.println("Sending final batch of " + mutationCountInCurrentBatch + " mutations.");
-                btDataClient.bulkMutateRows(batch);
-                totalMutationsSent += mutationCountInCurrentBatch;
+            if (currentBatchMutationCount > 0) {
+                System.out.println("SENDING FINAL BATCH OF " + currentBatchMutationCount + " MUTATIONS");
+                btDataClient.bulkMutateRows(bulkMutation);
+                totalMutations += currentBatchMutationCount;
             }
-            System.out.println("Data loaded successfully. Total mutations sent: " + totalMutationsSent);
+            System.out.println("DATA HAS BEEN LOADED SUCCESSFULLY, TOTAL MUTATIONS SENT >> " + totalMutations);
         } catch (IOException e) {
-            throw new Exception("Error loading data file: " + e.getMessage(), e);
+            throw new Exception("ERROR LOADING DATA FILE: " + e.getMessage(), e);
         }
     }
 
     // Query returns the temperature at Vancouver on October 1, 2022 at 10:00.
     public int query1() throws Exception {
         System.out.println("\n****Executing query1...");
-        String rowKey = "YVR#2022-10-01-10";
-        Row row = btDataClient.readRow(tableId, rowKey);
-        if (row != null) {
-            for (RowCell cell : row.getCells(COLUMN_FAMILY, "temperature")) {
-                return Integer.parseInt(cell.getValue().toStringUtf8());
+        String myRowKey = "YVR#2022-10-01-10";
+        Row my_rows = btDataClient.readRow(tableId, myRowKey);
+        if (my_rows != null) {
+            for (RowCell currentCell : my_rows.getCells(COLUMN_FAMILY, "temperature")) {
+                return Integer.parseInt(currentCell.getValue().toStringUtf8());
             }
         }
         return -999; // Not found
@@ -178,27 +184,27 @@ public class Bigtable {
     // Query returns the highest wind speed recorded in Portland during September 2022.
     public int query2() throws Exception {
         System.out.println("****Executing query2...");
-        int maxWindSpeed = 0;
-        Query query = Query.create(tableId).prefix("PDX#2022-09");
-        ServerStream<Row> rows = btDataClient.readRows(query);
+        int maximumWindSpeed = 0;
+        Query myQuery = Query.create(tableId).prefix("PDX#2022-09");
+        ServerStream<Row> myRows = btDataClient.readRows(myQuery);
 
-        for (Row row : rows) {
+        for (Row row : myRows) {
             for (RowCell cell : row.getCells(COLUMN_FAMILY, "windspeed")) {
                 String windSpeedStr = cell.getValue().toStringUtf8();
                 if (windSpeedStr != null && !windSpeedStr.isEmpty()) {
                     int currentWindSpeed = Integer.parseInt(windSpeedStr);
-                    if (currentWindSpeed > maxWindSpeed) {
-                        maxWindSpeed = currentWindSpeed;
+                    if (currentWindSpeed > maximumWindSpeed) {
+                        maximumWindSpeed = currentWindSpeed;
                     }
                 }
             }
         }
-        return maxWindSpeed;
+        return maximumWindSpeed;
     }
 
     // Query returns all readings for SeaTac on October 2, 2022.
     public ArrayList<Object[]> query3() throws Exception {
-        System.out.println("***Executing query #3...");
+        System.out.println("***Executing query3...");
         ArrayList<Object[]> data = new ArrayList<>();
         Query query = Query.create(tableId).prefix("SEA#2022-10-02");
         ServerStream<Row> rows = btDataClient.readRows(query);
@@ -222,13 +228,13 @@ public class Bigtable {
 
    // Query returns the highest temperature recorded across all three stations during the summer months (July and August) of 2022.
     public int query4() throws Exception {
-        System.out.println("****Executing query #4...");
+        System.out.println("****Executing query 4...");
         int maxTemp = -100;
-        String[] stations = {"SEA", "PDX", "YVR"};
-        String[] summerMonths = {"#2022-07", "#2022-08"};
+        String[] mystations = {"SEA", "PDX", "YVR"};
+        String[] summer_Months = {"#2022-07", "#2022-08"};
 
-        for (String station : stations) {
-            for (String month : summerMonths) {
+        for (String station : mystations) {
+            for (String month : summer_Months) {
                 Query query = Query.create(tableId).prefix(station + month);
                 ServerStream<Row> rows = btDataClient.readRows(query);
 
@@ -247,17 +253,14 @@ public class Bigtable {
 
     // Function to delete the table
     public void deleteTable() {
-        System.out.println("\nDeleting table: " + tableId);
+        System.out.println("DELETING TABLE >> " + tableId);
         try {
             btAdminClient.deleteTable(tableId);
-            System.out.printf("Table %s deleted successfully%n", tableId);
+            System.out.printf("TABLE %s HAS BEEN DELETED SUCCESSFULLY!!%n", tableId);
         } catch (NotFoundException e) {
-            System.err.println("Table does not exist, skipping deletion: " + e.getMessage());
+            System.err.println("TABLE DOES NOT EXIST, SKIPPING DELETION" + e.getMessage());
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        Bigtable testbt = new Bigtable();
-        testbt.run();
-    }
+    
 }
